@@ -1,0 +1,1 @@
+// SynClip.h
