@@ -24,14 +24,17 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 // Menu
 //
 
-IDR_TASKBAR MENU DISCARDABLE 
+IDR_TASKBAR MENU
 BEGIN
     POPUP "Popup"
     BEGIN
-        MENUITEM "Configure",         ID_SYNCLIP_CONFIGURE
-        MENUITEM "Enable",            ID_SYNCLIP_ENABLE
+        MENUITEM "Edit &configuration file...", ID_SYNCLIP_CONFIGURE
         MENUITEM SEPARATOR
-        MENUITEM "Exit",              ID_APP_EXIT
+        MENUITEM "&Enable clipboard synchronizing", ID_SYNCLIP_ENABLE
+        MENUITEM "&Nofify about clipboard changes", ID_SYNCLIP_NOTIFY
+        MENUITEM SEPARATOR
+        MENUITEM "&About...",                   ID_APP_ABOUT
+        MENUITEM "E&xit",                       ID_APP_EXIT
     END
 END
 
@@ -79,7 +82,46 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\SynClip.ico"
-IDR_TASKBAR           ICON                    "res\\SynClip.ico"
+IDR_TASKBAR             ICON                    "res\\SynClip.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 177, 127
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About SynClip"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,120,106,50,14,WS_GROUP
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
+    LTEXT           "Synchronized Clipboard, Version 1.0",IDC_STATIC,42,14,123,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2013\r\nAll rights reserved",IDC_STATIC,42,26,121,19
+    LTEXT           "Ferdinand Prantl",IDC_AUTHOR,42,45,121,8,WS_TABSTOP
+    LTEXT           "http://prantl.tk/synclip/",IDC_PRODUCT,42,54,121,8,WS_TABSTOP
+    LTEXT           "When clipboard content changes, the content exchange file will be updated.  When content of this file changes, the clipboard content will be updated.",IDC_STATIC,14,68,151,34,SS_NOPREFIX
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 170
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 120
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -128,11 +170,18 @@ END
 STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "SynClip"
+    IDR_TASKBAR             "Synchronized Clipboard"
 END
 
 STRINGTABLE
 BEGIN
     ATL_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_NOTIFY_TITLE        "Synchronized Clipboard Notification"
+    IDS_NOTIFY_MESSAGE      "Clipboard has been updated from the file content."
 END
 
 #endif    // English (United States) resources

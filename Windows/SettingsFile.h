@@ -42,13 +42,18 @@ public:
 		CPath path(GetUserHomeDir());
 		ATLVERIFY(path.Append(TEXT("SynClip.ini")));
 		m_strFilePath = path.m_strPath;
-		if (!m_fi.Initialize(m_strFilePath)) {
-			m_bUpdating = TRUE;
-			WriteFile();
-			m_fi.Initialize(m_strFilePath);
-			m_bUpdating = FALSE;
+		CSettings s;
+		s.Initialize(m_strFilePath);
+		m_bUpdating = TRUE;
+		WriteFile();
+		m_fi.Initialize(m_strFilePath);
+		m_s.Initialize(m_strFilePath);
+		if (m_s != s) {
+			m_s = s;
+			m_s.Save();
 		}
-		return m_s.Initialize(m_strFilePath);
+		m_bUpdating = FALSE;
+		return TRUE;
 	}
 
 	BOOL EditFile(HWND hWnd) {

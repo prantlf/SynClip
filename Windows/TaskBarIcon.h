@@ -140,6 +140,25 @@ public:
    { 
        return ::Shell_NotifyIcon(NIM_DELETE, &m_nid); 
    } 
+   BOOL ShowInfoTooltip(UINT nInfoTitleRes, UINT nInfoRes)
+   {
+      ATLASSERT(::IsWindow(m_nid.hWnd));
+      NOTIFYICONDATA nid; 
+      ::ZeroMemory(&nid, sizeof(nid));
+      nid.cbSize = sizeof(nid); 
+      nid.hWnd = m_nid.hWnd;
+      nid.uID = m_nid.uID;
+	  nid.szInfoTitle[0] = '\0';
+      ::LoadString(_Module.GetResourceInstance(), nInfoTitleRes,
+		  nid.szInfoTitle, sizeof(nid.szInfoTitle)/sizeof(TCHAR));
+	  nid.szInfo[0] = '\0';
+      ::LoadString(_Module.GetResourceInstance(), nInfoRes,
+		  nid.szInfo, sizeof(nid.szInfo)/sizeof(TCHAR));
+      nid.uFlags = NIF_INFO; 
+	  nid.dwInfoFlags = NIIF_INFO;
+      BOOL res = ::Shell_NotifyIcon(NIM_MODIFY, &nid); 
+      return res;
+   }
 
    // Message handlers
 

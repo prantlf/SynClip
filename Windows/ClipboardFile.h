@@ -112,7 +112,7 @@ public:
 					if (hglb != NULL) {
 						switch (uFormat) {
 						case CF_UNICODETEXT:
-							SaveClipboard(hglb);
+							bResult = SaveClipboard(hglb);
 						}
 					}
 					CloseClipboard(); 
@@ -134,7 +134,7 @@ public:
 			if (ReadFile()) {
 				if (OpenClipboard(hWnd)) {
 					EmptyClipboard();
-					LoadClipboard();
+					bResult = LoadClipboard();
 					CloseClipboard(); 
 				}
 			}

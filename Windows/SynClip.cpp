@@ -8,6 +8,7 @@
 
 #include <atlframe.h>
 #include <atlctrls.h>
+#include <atlctrlx.h>
 #include <atldlgs.h>
 #include <atlsync.h>
 #include <atlstr.h>
@@ -26,6 +27,7 @@
 #include "Settings.h"
 #include "SettingsFile.h"
 #include "ClipboardFile.h"
+#include "AboutDlg.h"
 #include "MainFrm.h"
 
 CAppModule _Module;

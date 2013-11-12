@@ -10,25 +10,25 @@ class CMainFrame :
 	public CMessageFilter,
 	public CIdleHandler {
 
-	CSettingsFile m_sf;
-	CClipboardFile m_cf;
-	CPathMonitor m_pmSettingsFile;
-	CPathMonitor m_pmClipboardFile;
-	CClipboardMonitor m_cm;
-	CTaskBarIcon m_ti;
+		CSettingsFile m_sf;
+		CClipboardFile m_cf;
+		CPathMonitor m_pmSettingsFile;
+		CPathMonitor m_pmClipboardFile;
+		CClipboardMonitor m_cm;
+		CTaskBarIcon m_ti;
 
-	BOOL Initialize() {
-		m_cf.Initialize(m_sf.m_s.m_strClipboardFile);
-		CPath pathClipboard(m_cf.m_strFilePath);
-		ATLVERIFY(pathClipboard.RemoveFileSpec());
-		m_pmClipboardFile.Install(m_hWnd, pathClipboard);
-		return TRUE;
-	}
+		BOOL Initialize() {
+			m_cf.Initialize(m_sf.m_s.m_strClipboardFile);
+			CPath pathClipboard(m_cf.m_strFilePath);
+			ATLVERIFY(pathClipboard.RemoveFileSpec());
+			m_pmClipboardFile.Install(m_hWnd, pathClipboard);
+			return TRUE;
+		}
 
-	BOOL Uninitialize() {
-		m_pmClipboardFile.Uninstall();
-		return TRUE;
-	}
+		BOOL Uninitialize() {
+			m_pmClipboardFile.Uninstall();
+			return TRUE;
+		}
 
 public:
 
@@ -48,9 +48,11 @@ public:
 	BEGIN_MSG_MAP(CMainFrame)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-		COMMAND_ID_HANDLER(ID_APP_EXIT, OnAppExit)
-		COMMAND_ID_HANDLER(ID_SYNCLIP_ENABLE, OnSynClipEnable)
 		COMMAND_ID_HANDLER(ID_SYNCLIP_CONFIGURE, OnSynClipConfigure)
+		COMMAND_ID_HANDLER(ID_SYNCLIP_ENABLE, OnSynClipEnable)
+		COMMAND_ID_HANDLER(ID_SYNCLIP_ENABLE, OnSynClipNotify)
+		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
+		COMMAND_ID_HANDLER(ID_APP_EXIT, OnAppExit)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_INITMENUPOPUP, OnTaskbarContextMenuInit)
 		TASKBAR_MESSAGE_HANDLER(m_ti, WM_LBUTTONDOWN, OnTaskIconClick)
@@ -109,14 +111,6 @@ public:
 			return 1;
 	}
 
-	LRESULT OnAppExit(WORD /*wNotifyCode*/,
-		WORD /*wID*/,
-		HWND /*hWndCtl*/,
-		BOOL& /*bHandled*/) {
-			PostMessage(WM_CLOSE);
-			return 0;
-	}
-
 	LRESULT OnTaskbarContextMenuInit(UINT /*uMsg*/,
 		WPARAM wParam,
 		LPARAM /*lParam*/,
@@ -125,20 +119,14 @@ public:
 			ATLASSERT(::IsMenu(hSubMenu));
 			CheckMenuItem(hSubMenu, ID_SYNCLIP_ENABLE, MF_BYCOMMAND |
 				(m_sf.m_s.m_bSychronizingEnabled ? MF_CHECKED : MF_UNCHECKED));
+			CheckMenuItem(hSubMenu, ID_SYNCLIP_NOTIFY, MF_BYCOMMAND |
+				(m_sf.m_s.m_bNotifyOnClipboardChange ? MF_CHECKED : MF_UNCHECKED));
 			return 0;
 	}
 
 	LRESULT OnTaskIconClick(LPARAM /*uMsg*/,
-		BOOL& /*bHandled*/) {
-			m_sf.m_s.m_bSychronizingEnabled = !m_sf.m_s.m_bSychronizingEnabled;
-			return 0;
-	}
-
-	LRESULT OnSynClipEnable(WORD /*wNotifyCode*/,
-		WORD /*wID*/,
-		HWND /*hWndCtl*/,
 		BOOL& bHandled) {
-			OnTaskIconClick(0, bHandled);
+			OnSynClipEnable(0, 0, 0, bHandled);
 			return 0;
 	}
 
@@ -150,6 +138,39 @@ public:
 			return 0;
 	}
 
+	LRESULT OnSynClipEnable(WORD /*wNotifyCode*/,
+		WORD /*wID*/,
+		HWND /*hWndCtl*/,
+		BOOL& /*bHandled*/) {
+			m_sf.m_s.m_bSychronizingEnabled = !m_sf.m_s.m_bSychronizingEnabled;
+			return 0;
+	}
+
+	LRESULT OnSynClipNotify(WORD /*wNotifyCode*/,
+		WORD /*wID*/,
+		HWND /*hWndCtl*/,
+		BOOL& /*bHandled*/) {
+			m_sf.m_s.m_bNotifyOnClipboardChange = !m_sf.m_s.m_bNotifyOnClipboardChange;
+			return 0;
+	}
+
+	LRESULT OnAppAbout(WORD /*wNotifyCode*/,
+		WORD /*wID*/,
+		HWND /*hWndCtl*/,
+		BOOL& /*bHandled*/) {
+			CAboutDlg dlg;
+			dlg.DoModal();
+			return 0;
+	}
+
+	LRESULT OnAppExit(WORD /*wNotifyCode*/,
+		WORD /*wID*/,
+		HWND /*hWndCtl*/,
+		BOOL& /*bHandled*/) {
+			PostMessage(WM_CLOSE);
+			return 0;
+	}
+
 	LRESULT OnCliboardChanged(BOOL& /*bHandled*/) {
 		if (m_sf.m_s.m_bSychronizingEnabled)
 			m_cf.UpdateFile(m_hWnd);
@@ -158,7 +179,8 @@ public:
 
 	LRESULT OnClipboardPathChanged(BOOL& /*bHandled*/) {
 		if (m_sf.m_s.m_bSychronizingEnabled && m_cf.m_fi.HasChanged())
-			m_cf.UpdateClipboard(m_hWnd);
+			if (m_cf.UpdateClipboard(m_hWnd) && m_sf.m_s.m_bNotifyOnClipboardChange)
+				m_ti.ShowInfoTooltip(IDS_NOTIFY_TITLE, IDS_NOTIFY_MESSAGE);
 		return 0;
 	}
 
